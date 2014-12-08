@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.VertxTestBase;
 import org.junit.Test;
 
+import java.util.Base64;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -94,7 +95,45 @@ public class MailServiceIntegrationTest extends VertxTestBase {
             assertEquals(CC_ADDRESS1 + ", " + CC_ADDRESS2, receivedMessage.getHeaderValue("Cc"));
             assertEquals(null, receivedMessage.getHeaderValue("Bcc"));
             assertEquals(SUBJECT, receivedMessage.getHeaderValue("Subject"));
+            assertEquals("7bit", receivedMessage.getHeaderValue("Content-Transfer-Encoding"));
             assertEquals(BODY, receivedMessage.getBody());
+
+            testComplete();
+        });
+
+        await();
+    }
+
+    @Test
+    public void testSendingEmailSuccessfully_With_Double_Byte_Chars() throws Exception {
+        String subject = "嗨";
+        String body = "你好";
+
+        SendOptions options = new SendOptions()
+                .setFrom(FROM_ADDRESS)
+                .addTo(TO_ADDRESS)
+                .addCc(CC_ADDRESS1)
+                .addCc(CC_ADDRESS2)
+                .addBcc(BCC_ADDRESS1)
+                .addBcc(BCC_ADDRESS2)
+                .setSubject(subject)
+                .setContentType(ContentType.TEXT_PLAIN)
+                .setBody(body);
+
+        service.send(options, result -> {
+            assertTrue(result.succeeded());
+
+            // Assert that the email sent is what we expected
+            assertEquals(1, smtpServer.getReceivedEmailSize());
+            SmtpMessage receivedMessage = (SmtpMessage) smtpServer.getReceivedEmail().next();
+
+            assertEquals(FROM_ADDRESS, receivedMessage.getHeaderValue("From"));
+            assertEquals(CC_ADDRESS1 + ", " + CC_ADDRESS2, receivedMessage.getHeaderValue("Cc"));
+            assertEquals(null, receivedMessage.getHeaderValue("Bcc"));
+            assertTrue(receivedMessage.getHeaderValue("Subject").startsWith("=?UTF-8?B?"));
+            assertEquals(subject, new String(Base64.getDecoder().decode(receivedMessage.getHeaderValue("Subject").substring(10, 14))));
+            assertEquals("base64", receivedMessage.getHeaderValue("Content-Transfer-Encoding"));
+            assertEquals(body, new String(Base64.getDecoder().decode(receivedMessage.getBody())));
 
             testComplete();
         });

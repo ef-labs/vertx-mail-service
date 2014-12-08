@@ -25,6 +25,12 @@ public class SendOptionsTest {
     private static final ContentType CONTENT_TYPE = ContentType.TEXT_PLAIN;
 
     @Test
+    public void testDefaultContentType() {
+        SendOptions options = new SendOptions();
+        assertEquals(ContentType.TEXT_PLAIN, options.getContentType());
+    }
+
+    @Test
     public void testCopyFromOther() {
         SendOptions other = getSimpleOptions();
         SendOptions options = new SendOptions(other);
@@ -52,20 +58,6 @@ public class SendOptionsTest {
         assertEquals(options.getSubject(), json.getString(SendOptions.JSON_FIELD_SUBJECT));
         assertEquals(options.getContentType(), ContentType.fromString(json.getString(SendOptions.JSON_FIELD_CONTENT_TYPE)));
         assertEquals(options.getBody(), json.getString(SendOptions.JSON_FIELD_BODY));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testValidate_from_not_provided() {
-        SendOptions options = new SendOptions()
-                .addTo(TO_ADDRESS);
-        options.validate();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testValidate_to_not_provided() {
-        SendOptions options = new SendOptions()
-                .setFrom(FROM_ADDRESS);
-        options.validate();
     }
 
     private void assertJsonArrayEquals(List<String> expected, JsonArray actual) {

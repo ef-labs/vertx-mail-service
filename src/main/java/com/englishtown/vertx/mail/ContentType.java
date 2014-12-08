@@ -5,22 +5,33 @@ package com.englishtown.vertx.mail;
  */
 public enum ContentType {
 
-    TEXT_PLAIN("text/plain"),
-    TEXT_HTML("text/html");
+    TEXT_PLAIN("text/plain", "plain"),
+    TEXT_HTML("text/html", "html");
 
     private final String type;
+    private final String subType;
 
-    private ContentType(String type) {
+    private ContentType(String type, String subType) {
         this.type = type;
+        this.subType = subType;
     }
 
     /**
-     * Get the String representative of the ContentType
+     * Get the String representation of the ContentType
      *
      * @return
      */
     public String getType() {
         return type;
+    }
+
+    /**
+     * Get the String representation of the subType
+     *
+     * @return
+     */
+    public String getSubType() {
+        return subType;
     }
 
     /**

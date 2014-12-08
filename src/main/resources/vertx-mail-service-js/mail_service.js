@@ -22,7 +22,7 @@ var JMailService = com.englishtown.vertx.mail.MailService;
 var SendOptions = com.englishtown.vertx.mail.SendOptions;
 
 /**
- Created by tristan on 12/4/14.
+ Interface of Mail service
 
   @class
 */

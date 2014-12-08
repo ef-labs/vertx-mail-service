@@ -18,7 +18,7 @@ public class SendOptions {
     private List<String> cc = new ArrayList<>();
     private List<String> bcc = new ArrayList<>();
     private String subject;
-    private ContentType contentType;
+    private ContentType contentType = ContentType.TEXT_PLAIN;
     private String body;
 
     public static final String JSON_FIELD_FROM = "from";
@@ -146,15 +146,6 @@ public class SendOptions {
         }
 
         return json;
-    }
-
-    public void validate() throws IllegalArgumentException {
-        if(from == null || from.isEmpty()) {
-            throw new IllegalArgumentException("from eamil address must be specified");
-        }
-        if(to == null || to.isEmpty()) {
-            throw new IllegalArgumentException("to email addresses must be specified");
-        }
     }
 
     private List<String> getStringListFromJsonArray(JsonArray source) {
