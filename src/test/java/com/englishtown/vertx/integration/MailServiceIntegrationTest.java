@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class MailServiceIntegrationTest extends VertxTestBase {
 
     private static final String MAILER_ADDRESS = "et.mailer";
-    private static final int STMP_PORT = 18271;
+    private static final int SMTP_PORT = 18271;
     private static final String CONFIG_FIELD_PORT = "port";
 
     private static final int DEPLOY_TIMEOUT_SECONDS = 2;
@@ -42,12 +42,12 @@ public class MailServiceIntegrationTest extends VertxTestBase {
         super.setUp();
 
         service = MailService.createEventBusProxy(vertx, MAILER_ADDRESS);
-        smtpServer = SimpleSmtpServer.start(STMP_PORT);
+        smtpServer = SimpleSmtpServer.start(SMTP_PORT);
 
         CountDownLatch latch = new CountDownLatch(1);
 
         DeploymentOptions options = new DeploymentOptions()
-                .setConfig(new JsonObject().put(CONFIG_FIELD_PORT, STMP_PORT));
+                .setConfig(new JsonObject().put(CONFIG_FIELD_PORT, SMTP_PORT));
 
         vertx.deployVerticle("service:com.englishtown.vertx:vertx-mail-service", options, result -> {
             if (result.failed()) {

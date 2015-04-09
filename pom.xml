@@ -9,48 +9,48 @@
     <parent>
         <groupId>com.englishtown.vertx</groupId>
         <artifactId>oss-parent-vertx</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>2.0.0</version>
     </parent>
 
     <properties>
-        <hk2.version>2.0.0-SNAPSHOT</hk2.version>
-        <vertx.codegen.version>1.0-SNAPSHOT</vertx.codegen.version>
-        <guava.version>16.0.1</guava.version>
+        <hk2.version>2.0.0-RC2</hk2.version>
+        <vertx.version>3.0.0-milestone3</vertx.version>
+        <guava.version>18.0</guava.version>
         <javamail.version>1.5.2</javamail.version>
+        <vertx.service.proxy.version>3.0.0-SNAPSHOT</vertx.service.proxy.version>
+
+        <!--Vert.x codegen does not play nice with maven-compiler-plugin 3.2-->
+        <maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.englishtown.vertx</groupId>
-            <artifactId>ext-hk2</artifactId>
+            <artifactId>vertx-hk2</artifactId>
             <version>${hk2.version}</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>service-proxy</artifactId>
-            <version>${vertx.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>codegen</artifactId>
-            <version>${vertx.codegen.version}</version>
-            <optional>true</optional>
+            <version>${vertx.service.proxy.version}</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-js</artifactId>
+            <version>${vertx.service.proxy.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-codegen</artifactId>
             <version>${vertx.version}</version>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-service-factory</artifactId>
             <version>${vertx.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
