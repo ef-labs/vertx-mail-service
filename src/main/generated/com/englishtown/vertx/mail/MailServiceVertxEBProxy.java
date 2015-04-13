@@ -51,7 +51,10 @@ public class MailServiceVertxEBProxy implements MailService {
   }
 
   public void send(SendOptions options, Handler<AsyncResult<Void>> resultHandler) {
-    checkClosed();
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
+    }
     JsonObject _json = new JsonObject();
     _json.put("options", options.toJson());
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
@@ -84,11 +87,6 @@ public class MailServiceVertxEBProxy implements MailService {
     return set;
   }
 
-  private void checkClosed() {
-    if (closed) {
-      throw new IllegalStateException("Proxy is closed");
-    }
-  }
   private <T> Map<String, T> convertMap(Map map) {
     return (Map<String, T>)map;
   }

@@ -1,0 +1,30 @@
+== SendOptions
+
+++++
+ Options for sending email
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+
+|[[from]]`from`
+|`String`
+|-
+|[[tos]]`tos`
+|`Array of String`
+|-
+|[[ccs]]`ccs`
+|`Array of String`
+|-
+|[[bccs]]`bccs`
+|`Array of String`
+|-
+|[[subject]]`subject`
+|`String`
+|-
+|[[body]]`body`
+|`String`
+|-|===

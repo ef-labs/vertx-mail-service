@@ -14,6 +14,7 @@
  * under the License.
  */
 
+/** @module vertx-mail-service-js/mail_service */
 var utils = require('vertx-js/util/utils');
 
 var io = Packages.io;
@@ -24,31 +25,47 @@ var SendOptions = com.englishtown.vertx.mail.SendOptions;
 /**
  Interface of Mail service
 
-  @class
+ @class
 */
 var MailService = function(j_val) {
 
   var j_mailService = j_val;
   var that = this;
 
+  /**
+
+   @public
+
+   */
   this.start = function() {
     var __args = arguments;
     if (__args.length === 0) {
-      j_mailService.start();
+      j_mailService["start()"]();
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+
+   */
   this.stop = function() {
     var __args = arguments;
     if (__args.length === 0) {
-      j_mailService.stop();
+      j_mailService["stop()"]();
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param options {Object} 
+   @param resultHandler {function} 
+   */
   this.send = function(options, resultHandler) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
-      j_mailService.send(options != null ? new SendOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mailService["send(com.englishtown.vertx.mail.SendOptions,io.vertx.core.Handler)"](options != null ? new SendOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {
@@ -64,14 +81,18 @@ var MailService = function(j_val) {
   this._jdel = j_mailService;
 };
 
-/*
+/**
  Create proxy for MailService event bus
 
-*/
+ @memberof module:vertx-mail-service-js/mail_service
+ @param vertx {Vertx} 
+ @param address {string} of event bus 
+ @return {MailService} 
+ */
 MailService.createEventBusProxy = function(vertx, address) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'string') {
-    return new MailService(JMailService.createEventBusProxy(vertx._jdel, address));
+    return new MailService(JMailService["createEventBusProxy(io.vertx.core.Vertx,java.lang.String)"](vertx._jdel, address));
   } else utils.invalidArgs();
 };
 

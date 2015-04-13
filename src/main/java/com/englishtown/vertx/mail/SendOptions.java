@@ -1,6 +1,6 @@
 package com.englishtown.vertx.mail;
 
-import io.vertx.codegen.annotations.Options;
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Options for sending email
  */
-@Options
+@DataObject
 public class SendOptions {
 
     private String from;

@@ -14,10 +14,9 @@
 
     <properties>
         <hk2.version>2.0.0-RC2</hk2.version>
-        <vertx.version>3.0.0-milestone3</vertx.version>
+        <vertx.version>3.0.0-milestone4</vertx.version>
         <guava.version>18.0</guava.version>
         <javamail.version>1.5.2</javamail.version>
-        <vertx.service.proxy.version>3.0.0-SNAPSHOT</vertx.service.proxy.version>
 
         <!--Vert.x codegen does not play nice with maven-compiler-plugin 3.2-->
         <maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
@@ -31,13 +30,13 @@
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>service-proxy</artifactId>
-            <version>${vertx.service.proxy.version}</version>
+            <artifactId>vertx-service-proxy</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>vertx-js</artifactId>
-            <version>${vertx.service.proxy.version}</version>
+            <artifactId>vertx-lang-js</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>

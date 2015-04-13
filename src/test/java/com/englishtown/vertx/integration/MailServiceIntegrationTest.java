@@ -49,7 +49,7 @@ public class MailServiceIntegrationTest extends VertxTestBase {
         DeploymentOptions options = new DeploymentOptions()
                 .setConfig(new JsonObject().put(CONFIG_FIELD_PORT, SMTP_PORT));
 
-        vertx.deployVerticle("service:com.englishtown.vertx:vertx-mail-service", options, result -> {
+        vertx.deployVerticle("service:com.englishtown.vertx.vertx-mail-service", options, result -> {
             if (result.failed()) {
                 result.cause().printStackTrace();
                 fail();
@@ -144,9 +144,7 @@ public class MailServiceIntegrationTest extends VertxTestBase {
     @Test
     public void testSendingEmailFailed() throws Exception {
         SendOptions options = new SendOptions();
-        service.send(options, result -> {
-            assertTrue(result.failed());
-        });
+        service.send(options, result -> assertTrue(result.failed()));
     }
 
 }
