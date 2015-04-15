@@ -1,8 +1,0 @@
-{
-    "main": "com.englishtown.vertx.Mailer",
-    "worker": true,
-
-    "description":"Worker module for sending email",
-    "author": "john.warner",
-    "keywords": ["mail", "email", "mailer", "smtp", "JavaMail"]
-}

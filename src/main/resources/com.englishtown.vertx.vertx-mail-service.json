@@ -1,0 +1,12 @@
+{
+  "main": "java-hk2:com.englishtown.vertx.mail.MailServiceVerticle",
+  "options": {
+    "worker": true,
+    "config": {
+      "hk2_binder": [
+        "com.englishtown.vertx.mail.hk2.MailBinder"
+      ],
+      "address": "et.mailer"
+    }
+  }
+}
