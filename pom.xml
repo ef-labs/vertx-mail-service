@@ -12,8 +12,8 @@
     </parent>
 
     <properties>
-        <hk2.version>2.0.0-RC4</hk2.version>
-        <vertx.version>3.0.0-milestone5</vertx.version>
+        <hk2.version>2.0.0-RC5</hk2.version>
+        <vertx.version>3.0.0-milestone6</vertx.version>
         <guava.version>18.0</guava.version>
         <javamail.version>1.5.2</javamail.version>
 

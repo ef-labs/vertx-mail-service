@@ -25,7 +25,13 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.ReplyException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import java.util.ArrayList;import java.util.HashSet;import java.util.List;import java.util.Map;import java.util.Set;import java.util.UUID;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ProxyHandler;
 import com.englishtown.vertx.mail.SendOptions;
@@ -101,7 +107,7 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
         break;
       }
       case "send": {
-        service.send(new com.englishtown.vertx.mail.SendOptions(json.getJsonObject("options")), createHandler(msg));
+        service.send(json.getJsonObject("options") == null ? null : new com.englishtown.vertx.mail.SendOptions(json.getJsonObject("options")), createHandler(msg));
         break;
       }
       default: {
