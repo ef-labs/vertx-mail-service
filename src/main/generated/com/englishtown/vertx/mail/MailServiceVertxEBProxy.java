@@ -22,7 +22,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import java.util.ArrayList;import java.util.HashSet;import java.util.List;import java.util.Map;import java.util.Set;import io.vertx.serviceproxy.ProxyHelper;
+import java.util.ArrayList;import java.util.HashSet;import java.util.List;import java.util.Map;import java.util.Set;import java.util.stream.Collectors;
+import io.vertx.serviceproxy.ProxyHelper;
 import com.englishtown.vertx.mail.SendOptions;
 import io.vertx.core.Vertx;
 import com.englishtown.vertx.mail.MailService;
@@ -56,7 +57,7 @@ public class MailServiceVertxEBProxy implements MailService {
       return;
     }
     JsonObject _json = new JsonObject();
-    _json.put("options", options.toJson());
+    _json.put("options", options == null ? null : options.toJson());
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
     _deliveryOptions.addHeader("action", "send");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
