@@ -1,0 +1,23 @@
+= Cheatsheets
+
+[[SendOptions]]
+== SendOptions
+
+++++
+ Options for sending email
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[bccs]]`bccs`|`Array of String`|-
+|[[body]]`body`|`String`|-
+|[[ccs]]`ccs`|`Array of String`|-
+|[[contentType]]`contentType`|`link:enums.html#ContentType[ContentType]`|-
+|[[from]]`from`|`String`|-
+|[[subject]]`subject`|`String`|-
+|[[tos]]`tos`|`Array of String`|-
+|===
+
