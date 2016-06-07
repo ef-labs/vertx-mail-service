@@ -2,7 +2,7 @@
 
 A simple worker service with event bus proxy to send emails. 
 
-[![Build Status](http://img.shields.io/travis/ef-labs/vertx-mail-service.svg?maxAge=2592000&style=flat-square)](https://travis-ci.org/ef-labs/vertx-mail-service)
+[![Build Status](https://img.shields.io/travis/ef-labs/vertx-mail-service.svg?maxAge=2592000&style=flat-square)](https://travis-ci.org/ef-labs/vertx-mail-service)
 [![Maven Central](https://img.shields.io/maven-central/v/com.englishtown.vertx/vertx-mail-service.svg?maxAge=2592000&style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.englishtown.vertx/vertx-mail-service/)
 
 ### Usage
