@@ -12,12 +12,15 @@
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
+|[[bcc]]`bcc`|`Array of String`|-
 |[[bccs]]`bccs`|`Array of String`|-
 |[[body]]`body`|`String`|-
+|[[cc]]`cc`|`Array of String`|-
 |[[ccs]]`ccs`|`Array of String`|-
 |[[contentType]]`contentType`|`link:enums.html#ContentType[ContentType]`|-
 |[[from]]`from`|`String`|-
 |[[subject]]`subject`|`String`|-
+|[[to]]`to`|`Array of String`|-
 |[[tos]]`tos`|`Array of String`|-
 |===
 
