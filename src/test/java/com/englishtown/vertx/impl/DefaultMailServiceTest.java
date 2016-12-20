@@ -42,6 +42,9 @@ public class DefaultMailServiceTest {
     private static final String TEST_HOST = "test.mail.com";
     private static final int TEST_PORT = 12321;
 
+    private static final int TEST_CONNECT_TIMEOUT = 20000;
+    private static final int TEST_TIMEOUT = 40000;
+
     private MailService service;
 
     @Mock
@@ -69,6 +72,8 @@ public class DefaultMailServiceTest {
                 new JsonObject()
                         .put(DefaultMailService.CONFIG_FIELD_HOST, TEST_HOST)
                         .put(DefaultMailService.CONFIG_FIELD_PORT, TEST_PORT)
+                        .put(DefaultMailService.CONFIG_FIELD_SMTP_CONNECT_TIMEOUT, TEST_CONNECT_TIMEOUT)
+                        .put(DefaultMailService.CONFIG_FIELD_SMTP_TIMEOUT, TEST_TIMEOUT)
         );
 
         service = new DefaultMailService(vertx, transportDelegate);
@@ -138,6 +143,8 @@ public class DefaultMailServiceTest {
         assertEquals(DefaultMailService.SMTP, session.getProperty(DefaultMailService.MAIL_TRANSPORT_PROTOCOL_NAME));
         assertEquals(TEST_HOST, session.getProperty(DefaultMailService.MAIL_SMTP_HOST_NAME));
         assertEquals(String.valueOf(TEST_PORT), session.getProperty(DefaultMailService.MAIL_SMTP_PORT_NAME));
+        assertEquals(String.valueOf(TEST_CONNECT_TIMEOUT), session.getProperty(DefaultMailService.MAIL_SMTP_CONNECT_TIMEOUT));
+        assertEquals(String.valueOf(TEST_TIMEOUT), session.getProperty(DefaultMailService.MAIL_SMTP_TIMEOUT));
 
         // Verify async handler succeed
         verify(handler).handle(asyncResultArgumentCaptor.capture());
