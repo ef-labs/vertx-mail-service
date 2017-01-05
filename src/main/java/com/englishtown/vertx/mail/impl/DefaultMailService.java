@@ -28,14 +28,20 @@ public class DefaultMailService implements MailService {
     private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_PORT = 25;
     public static final String SMTP = "smtp";
+    private static final int DEFAULT_SMTP_CONNECT_TIMEOUT = 10000;
+    private static final int DEFAULT_SMTP_TIMEOUT = 30000;
     public static final String CHARSET_UTF8 = "UTF-8";
 
     public static final String MAIL_TRANSPORT_PROTOCOL_NAME = "mail.transport.protocol";
     public static final String MAIL_SMTP_HOST_NAME = "mail.smtp.host";
     public static final String MAIL_SMTP_PORT_NAME = "mail.smtp.port";
+    public static final String MAIL_SMTP_CONNECT_TIMEOUT = "mail.smtp.connectiontimeout";
+    public static final String MAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
 
     public static final String CONFIG_FIELD_HOST = "host";
     public static final String CONFIG_FIELD_PORT = "port";
+    public static final String CONFIG_FIELD_SMTP_CONNECT_TIMEOUT = "smtp_connect_timeout";
+    public static final String CONFIG_FIELD_SMTP_TIMEOUT = "smtp_timeout";
 
     private Session session;
     private final Vertx vertx;
@@ -77,6 +83,8 @@ public class DefaultMailService implements MailService {
         props.put(MAIL_TRANSPORT_PROTOCOL_NAME, SMTP);
         props.put(MAIL_SMTP_HOST_NAME, config.getString(CONFIG_FIELD_HOST, DEFAULT_HOST));
         props.put(MAIL_SMTP_PORT_NAME, Integer.toString(config.getInteger(CONFIG_FIELD_PORT, DEFAULT_PORT)));
+        props.put(MAIL_SMTP_CONNECT_TIMEOUT, Integer.toString(config.getInteger(CONFIG_FIELD_SMTP_CONNECT_TIMEOUT, DEFAULT_SMTP_CONNECT_TIMEOUT)));
+        props.put(MAIL_SMTP_TIMEOUT, Integer.toString(config.getInteger(CONFIG_FIELD_SMTP_TIMEOUT, DEFAULT_SMTP_TIMEOUT)));
 
         session = Session.getInstance(props);
     }
