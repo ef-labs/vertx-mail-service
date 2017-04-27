@@ -5,6 +5,7 @@ import com.englishtown.vertx.mail.MailService;
 import com.englishtown.vertx.mail.SendOptions;
 import com.englishtown.vertx.mail.TransportDelegate;
 import com.englishtown.vertx.mail.impl.DefaultMailService;
+import com.englishtown.vertx.mail.impl.DefaultMailConfigurator;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
@@ -70,10 +71,10 @@ public class DefaultMailServiceTest {
         when(vertx.getOrCreateContext()).thenReturn(context);
         when(context.config()).thenReturn(
                 new JsonObject()
-                        .put(DefaultMailService.CONFIG_FIELD_HOST, TEST_HOST)
-                        .put(DefaultMailService.CONFIG_FIELD_PORT, TEST_PORT)
-                        .put(DefaultMailService.CONFIG_FIELD_SMTP_CONNECT_TIMEOUT, TEST_CONNECT_TIMEOUT)
-                        .put(DefaultMailService.CONFIG_FIELD_SMTP_TIMEOUT, TEST_TIMEOUT)
+                        .put(DefaultMailConfigurator.CONFIG_FIELD_HOST, TEST_HOST)
+                        .put(DefaultMailConfigurator.CONFIG_FIELD_PORT, TEST_PORT)
+                        .put(DefaultMailConfigurator.CONFIG_FIELD_SMTP_CONNECT_TIMEOUT, TEST_CONNECT_TIMEOUT)
+                        .put(DefaultMailConfigurator.CONFIG_FIELD_SMTP_TIMEOUT, TEST_TIMEOUT)
         );
 
         service = new DefaultMailService(vertx, transportDelegate);
@@ -88,7 +89,7 @@ public class DefaultMailServiceTest {
         verify(handler).handle(asyncResultArgumentCaptor.capture());
         AsyncResult<Void> asyncResult = asyncResultArgumentCaptor.getValue();
         assertTrue(asyncResult.failed());
-        assertEquals("from eamil address must be specified", asyncResult.cause().getMessage());
+        assertEquals("from email address must be specified", asyncResult.cause().getMessage());
     }
 
     @Test

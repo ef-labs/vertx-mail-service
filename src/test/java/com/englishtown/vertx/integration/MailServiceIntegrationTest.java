@@ -144,7 +144,13 @@ public class MailServiceIntegrationTest extends VertxTestBase {
     @Test
     public void testSendingEmailFailed() throws Exception {
         SendOptions options = new SendOptions();
-        service.send(options, result -> assertTrue(result.failed()));
+
+        service.send(options, result -> {
+            assertTrue(result.failed());
+            testComplete();
+        });
+
+        await();
     }
 
 }
