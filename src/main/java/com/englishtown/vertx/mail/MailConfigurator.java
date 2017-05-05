@@ -5,6 +5,8 @@ package com.englishtown.vertx.mail;
  */
 public interface MailConfigurator {
 
+    String getTransportProtocol();
+
     String getHost();
 
     int getPort();
@@ -12,5 +14,15 @@ public interface MailConfigurator {
     int getConnectTimeout();
 
     int getTimeout();
+
+    String getUsername();
+
+    String getPassword();
+
+    boolean getStartTlsEnable();
+
+    boolean getStartTlsRequired();
+
+    boolean isDebug();
 
 }

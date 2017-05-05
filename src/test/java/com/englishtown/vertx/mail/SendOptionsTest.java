@@ -1,7 +1,5 @@
-package com.englishtown.vertx;
+package com.englishtown.vertx.mail;
 
-import com.englishtown.vertx.mail.ContentType;
-import com.englishtown.vertx.mail.SendOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;

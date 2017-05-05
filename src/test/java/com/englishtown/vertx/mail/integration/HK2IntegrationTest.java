@@ -1,4 +1,4 @@
-package com.englishtown.vertx.integration;
+package com.englishtown.vertx.mail.integration;
 
 import com.englishtown.vertx.hk2.HK2VertxBinder;
 import com.englishtown.vertx.mail.MailService;

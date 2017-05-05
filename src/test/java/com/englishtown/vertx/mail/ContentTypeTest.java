@@ -1,7 +1,7 @@
-package com.englishtown.vertx;
+package com.englishtown.vertx.mail;
 
-import com.englishtown.vertx.mail.ContentType;
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 /**
