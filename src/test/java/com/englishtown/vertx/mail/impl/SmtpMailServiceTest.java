@@ -1,37 +1,43 @@
-package com.englishtown.vertx.impl;
+package com.englishtown.vertx.mail.impl;
 
 import com.englishtown.vertx.mail.ContentType;
-import com.englishtown.vertx.mail.MailService;
+import com.englishtown.vertx.mail.MailConfigurator;
 import com.englishtown.vertx.mail.SendOptions;
-import com.englishtown.vertx.mail.TransportDelegate;
-import com.englishtown.vertx.mail.impl.DefaultMailService;
+import com.englishtown.vertx.mail.SessionFactory;
 import com.englishtown.vertx.mail.impl.DefaultMailConfigurator;
+import com.englishtown.vertx.mail.impl.SmtpMailService;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import javax.mail.Message;
 import javax.mail.Session;
+import javax.mail.Transport;
 
+import java.util.Properties;
+
+import static com.englishtown.vertx.mail.impl.DefaultMailConfigurator.DEFAULT_TRANSPORT_PROTOCOL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link com.englishtown.vertx.mail.impl.DefaultMailService}
+ * Unit tests for {@link SmtpMailService}
  */
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultMailServiceTest {
+public class SmtpMailServiceTest {
 
     private static final String FROM_ADDRESS = "integration_test@test.com";
     private static final String TO_ADDRESS = "test@test.com";
@@ -45,40 +51,82 @@ public class DefaultMailServiceTest {
 
     private static final int TEST_CONNECT_TIMEOUT = 20000;
     private static final int TEST_TIMEOUT = 40000;
+    private static final String TEST_TRANSPORT_PROTOCOL = "smtps";
 
-    private MailService service;
+    private SmtpMailService service;
 
-    @Mock
-    private Vertx vertx;
-
-    @Mock
-    private Context context;
+    @Rule
+    public MockitoRule mockitoRule = MockitoJUnit.rule();
 
     @Mock
-    private TransportDelegate transportDelegate;
-
+    private MailConfigurator configurator;
+    @Mock
+    private SessionFactory sessionFactory;
     @Mock
     private Handler<AsyncResult<Void>> handler;
+    @Mock
+    private Session session;
+    @Mock
+    private Transport transport;
 
+    @Captor
+    private ArgumentCaptor<Properties> propsArgumentCaptor;
     @Captor
     private ArgumentCaptor<AsyncResult<Void>> asyncResultArgumentCaptor;
-
     @Captor
-    ArgumentCaptor<Message> messageArgumentCaptor;
+    private ArgumentCaptor<Message> messageArgumentCaptor;
 
     @Before
-    public void setUp() {
-        when(vertx.getOrCreateContext()).thenReturn(context);
-        when(context.config()).thenReturn(
-                new JsonObject()
-                        .put(DefaultMailConfigurator.CONFIG_FIELD_HOST, TEST_HOST)
-                        .put(DefaultMailConfigurator.CONFIG_FIELD_PORT, TEST_PORT)
-                        .put(DefaultMailConfigurator.CONFIG_FIELD_SMTP_CONNECT_TIMEOUT, TEST_CONNECT_TIMEOUT)
-                        .put(DefaultMailConfigurator.CONFIG_FIELD_SMTP_TIMEOUT, TEST_TIMEOUT)
-        );
+    public void setUp() throws Exception {
 
-        service = new DefaultMailService(vertx, transportDelegate);
+        when(configurator.getTransportProtocol()).thenReturn(TEST_TRANSPORT_PROTOCOL);
+        when(configurator.getHost()).thenReturn(TEST_HOST);
+        when(configurator.getPort()).thenReturn(TEST_PORT);
+        when(configurator.getConnectTimeout()).thenReturn(TEST_CONNECT_TIMEOUT);
+        when(configurator.getTimeout()).thenReturn(TEST_TIMEOUT);
+
+        when(sessionFactory.getInstance(any())).thenReturn(session);
+        when(session.getTransport()).thenReturn(transport);
+
+        service = new SmtpMailService(configurator, sessionFactory);
         service.start();
+
+    }
+
+    @Test
+    public void testInitSession() throws Exception {
+
+        verify(session).getTransport();
+        verify(transport).connect();
+
+        verify(sessionFactory).getInstance(propsArgumentCaptor.capture());
+        Properties props = propsArgumentCaptor.getValue();
+
+        // Verify mail session
+        assertEquals(TEST_TRANSPORT_PROTOCOL, props.getProperty(SmtpMailService.MAIL_TRANSPORT_PROTOCOL));
+        assertEquals(TEST_HOST, props.getProperty(SmtpMailService.MAIL_SMTP_HOST));
+        assertEquals(String.valueOf(TEST_PORT), props.getProperty(SmtpMailService.MAIL_SMTP_PORT));
+        assertEquals(String.valueOf(TEST_CONNECT_TIMEOUT), props.getProperty(SmtpMailService.MAIL_SMTP_CONNECT_TIMEOUT));
+        assertEquals(String.valueOf(TEST_TIMEOUT), props.getProperty(SmtpMailService.MAIL_SMTP_TIMEOUT));
+        assertEquals(String.valueOf(false), props.getProperty(SmtpMailService.MAIL_SMTP_STARTTLS_ENABLE));
+        assertEquals(String.valueOf(false), props.getProperty(SmtpMailService.MAIL_SMTP_STARTTLS_REQUIRED));
+
+    }
+
+    @Test
+    public void testInitSession_Auth() throws Exception {
+
+        String username = "test_user";
+        String password = "test_password";
+
+        when(configurator.getUsername()).thenReturn(username);
+        when(configurator.getPassword()).thenReturn(password);
+
+        service = new SmtpMailService(configurator, sessionFactory);
+        service.start();
+
+        verify(transport).connect(eq(username), eq(password));
+
     }
 
     @Test
@@ -115,6 +163,11 @@ public class DefaultMailServiceTest {
 
     @Test
     public void testSend_Success() throws Exception {
+
+        verify(sessionFactory).getInstance(propsArgumentCaptor.capture());
+        Properties props = propsArgumentCaptor.getValue();
+        when(session.getProperties()).thenReturn(props);
+
         SendOptions options = new SendOptions()
                 .setFrom(FROM_ADDRESS)
                 .addTo(TO_ADDRESS)
@@ -127,7 +180,7 @@ public class DefaultMailServiceTest {
         service.send(options, handler);
 
         // Verify mime message
-        verify(transportDelegate).send(messageArgumentCaptor.capture());
+        verify(transport).sendMessage(messageArgumentCaptor.capture(), any());
         Message msg = messageArgumentCaptor.getValue();
         // msg.saveChanges() is called from Transport.send(msg)
         msg.saveChanges();
@@ -139,17 +192,16 @@ public class DefaultMailServiceTest {
         assertEquals("text/html; charset=UTF-8", msg.getContentType());
         assertEquals(BODY, msg.getContent());
 
-        // Verify mail session
-        Session session = msg.getSession();
-        assertEquals(DefaultMailService.SMTP, session.getProperty(DefaultMailService.MAIL_TRANSPORT_PROTOCOL_NAME));
-        assertEquals(TEST_HOST, session.getProperty(DefaultMailService.MAIL_SMTP_HOST_NAME));
-        assertEquals(String.valueOf(TEST_PORT), session.getProperty(DefaultMailService.MAIL_SMTP_PORT_NAME));
-        assertEquals(String.valueOf(TEST_CONNECT_TIMEOUT), session.getProperty(DefaultMailService.MAIL_SMTP_CONNECT_TIMEOUT));
-        assertEquals(String.valueOf(TEST_TIMEOUT), session.getProperty(DefaultMailService.MAIL_SMTP_TIMEOUT));
-
         // Verify async handler succeed
         verify(handler).handle(asyncResultArgumentCaptor.capture());
         assertTrue(asyncResultArgumentCaptor.getValue().succeeded());
     }
+
+    @Test
+    public void testStop() throws Exception {
+        service.stop();
+        verify(transport).close();
+    }
+
 }
 

@@ -1,15 +1,17 @@
-package com.englishtown.vertx.integration;
+package com.englishtown.vertx.mail.integration;
 
-import com.dumbster.smtp.SimpleSmtpServer;
-import com.dumbster.smtp.SmtpMessage;
 import com.englishtown.vertx.mail.ContentType;
 import com.englishtown.vertx.mail.MailService;
 import com.englishtown.vertx.mail.SendOptions;
+import com.icegreen.greenmail.junit.GreenMailRule;
+import com.icegreen.greenmail.util.ServerSetupTest;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.VertxTestBase;
+import org.junit.Rule;
 import org.junit.Test;
 
+import javax.mail.internet.MimeMessage;
 import java.util.Base64;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 public class MailServiceIntegrationTest extends VertxTestBase {
 
     private static final String MAILER_ADDRESS = "et.mailer";
-    private static final int SMTP_PORT = 18271;
     private static final String CONFIG_FIELD_PORT = "port";
 
     private static final int DEPLOY_TIMEOUT_SECONDS = 2;
@@ -35,19 +36,21 @@ public class MailServiceIntegrationTest extends VertxTestBase {
     private static final String BODY = "This is a message from testSendingEmailSuccessfully";
 
     private MailService service;
-    private SimpleSmtpServer smtpServer;
+
+    @Rule
+    public final GreenMailRule greenMail = new GreenMailRule(ServerSetupTest.SMTP);
+
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
 
         service = MailService.createEventBusProxy(vertx, MAILER_ADDRESS);
-        smtpServer = SimpleSmtpServer.start(SMTP_PORT);
 
         CountDownLatch latch = new CountDownLatch(1);
 
         DeploymentOptions options = new DeploymentOptions()
-                .setConfig(new JsonObject().put(CONFIG_FIELD_PORT, SMTP_PORT));
+                .setConfig(new JsonObject().put(CONFIG_FIELD_PORT, ServerSetupTest.SMTP.getPort()));
 
         vertx.deployVerticle("service:com.englishtown.vertx.vertx-mail-service", options, result -> {
             if (result.failed()) {
@@ -65,9 +68,6 @@ public class MailServiceIntegrationTest extends VertxTestBase {
     protected void tearDown() throws Exception {
         super.tearDown();
         service.stop();
-        if (smtpServer != null) {
-            smtpServer.stop();
-        }
     }
 
     @Test
@@ -87,18 +87,28 @@ public class MailServiceIntegrationTest extends VertxTestBase {
         service.send(options, result -> {
             assertTrue(result.succeeded());
 
-            // Assert that the email sent is what we expected
-            assertEquals(1, smtpServer.getReceivedEmailSize());
-            SmtpMessage receivedMessage = (SmtpMessage) smtpServer.getReceivedEmail().next();
+            vertx.setTimer(500, id -> {
+                try {
+                    MimeMessage[] messages = greenMail.getReceivedMessages();
 
-            assertEquals(FROM_ADDRESS, receivedMessage.getHeaderValue("From"));
-            assertEquals(CC_ADDRESS1 + ", " + CC_ADDRESS2, receivedMessage.getHeaderValue("Cc"));
-            assertEquals(null, receivedMessage.getHeaderValue("Bcc"));
-            assertEquals(SUBJECT, receivedMessage.getHeaderValue("Subject"));
-            assertEquals("7bit", receivedMessage.getHeaderValue("Content-Transfer-Encoding"));
-            assertEquals(BODY, receivedMessage.getBody());
+                    // Assert that the email sent is what we expected
+                    assertEquals(5, messages.length);
+                    MimeMessage message = messages[0];
 
-            testComplete();
+                    assertEquals(FROM_ADDRESS, message.getFrom()[0].toString());
+                    assertEquals(CC_ADDRESS1 + ", " + CC_ADDRESS2, message.getHeader("Cc")[0]);
+                    assertNull(message.getHeader("Bcc"));
+                    assertEquals(SUBJECT, message.getSubject());
+                    assertEquals("7bit", message.getHeader("Content-Transfer-Encoding")[0]);
+                    assertEquals(BODY + "\r\n", message.getContent());
+
+                    testComplete();
+
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                    fail(t);
+                }
+            });
         });
 
         await();
@@ -112,10 +122,6 @@ public class MailServiceIntegrationTest extends VertxTestBase {
         SendOptions options = new SendOptions()
                 .setFrom(FROM_ADDRESS)
                 .addTo(TO_ADDRESS)
-                .addCc(CC_ADDRESS1)
-                .addCc(CC_ADDRESS2)
-                .addBcc(BCC_ADDRESS1)
-                .addBcc(BCC_ADDRESS2)
                 .setSubject(subject)
                 .setContentType(ContentType.TEXT_PLAIN)
                 .setBody(body);
@@ -123,19 +129,26 @@ public class MailServiceIntegrationTest extends VertxTestBase {
         service.send(options, result -> {
             assertTrue(result.succeeded());
 
-            // Assert that the email sent is what we expected
-            assertEquals(1, smtpServer.getReceivedEmailSize());
-            SmtpMessage receivedMessage = (SmtpMessage) smtpServer.getReceivedEmail().next();
+            vertx.setTimer(500, id -> {
+                try {
+                    MimeMessage[] messages = greenMail.getReceivedMessages();
 
-            assertEquals(FROM_ADDRESS, receivedMessage.getHeaderValue("From"));
-            assertEquals(CC_ADDRESS1 + ", " + CC_ADDRESS2, receivedMessage.getHeaderValue("Cc"));
-            assertEquals(null, receivedMessage.getHeaderValue("Bcc"));
-            assertTrue(receivedMessage.getHeaderValue("Subject").startsWith("=?UTF-8?B?"));
-            assertEquals(subject, new String(Base64.getDecoder().decode(receivedMessage.getHeaderValue("Subject").substring(10, 14))));
-            assertEquals("base64", receivedMessage.getHeaderValue("Content-Transfer-Encoding"));
-            assertEquals(body, new String(Base64.getDecoder().decode(receivedMessage.getBody())));
+                    // Assert that the email sent is what we expected
+                    assertEquals(1, messages.length);
+                    MimeMessage message = messages[0];
 
-            testComplete();
+                    assertEquals(FROM_ADDRESS, message.getFrom()[0].toString());
+                    assertEquals(subject, message.getSubject());
+                    assertEquals("base64", message.getHeader("Content-Transfer-Encoding")[0]);
+                    assertEquals(body, message.getContent());
+
+                    testComplete();
+
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                    fail(t);
+                }
+            });
         });
 
         await();

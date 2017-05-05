@@ -3,16 +3,18 @@ package com.englishtown.vertx.mail.impl;
 import com.englishtown.vertx.mail.MailConfigurator;
 import com.englishtown.vertx.mail.MailService;
 import com.englishtown.vertx.mail.SendOptions;
-import com.englishtown.vertx.mail.TransportDelegate;
+import com.englishtown.vertx.mail.SessionFactory;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -23,41 +25,51 @@ import java.util.Properties;
 /**
  * Default implementation of {@link com.englishtown.vertx.mail.MailService}
  */
-public class DefaultMailService implements MailService {
+public class SmtpMailService implements MailService {
 
-    public static final String SMTP = "smtp";
     public static final String CHARSET_UTF8 = "UTF-8";
 
-    public static final String MAIL_TRANSPORT_PROTOCOL_NAME = "mail.transport.protocol";
-    public static final String MAIL_SMTP_HOST_NAME = "mail.smtp.host";
-    public static final String MAIL_SMTP_PORT_NAME = "mail.smtp.port";
+    public static final String MAIL_TRANSPORT_PROTOCOL = "mail.transport.protocol";
+    public static final String MAIL_SMTP_HOST = "mail.smtp.host";
+    public static final String MAIL_SMTP_PORT = "mail.smtp.port";
     public static final String MAIL_SMTP_CONNECT_TIMEOUT = "mail.smtp.connectiontimeout";
+    public static final String MAIL_SMTP_AUTH = "mail.smtp.auth";
     public static final String MAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
+    public static final String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
+    public static final String MAIL_SMTP_STARTTLS_REQUIRED = "mail.smtp.starttls.required";
 
     private Session session;
-    private final Vertx vertx;
+    private Transport transport;
     private final MailConfigurator configurator;
-    private final TransportDelegate transportDelegate;
+    private final SessionFactory sessionFactory;
+
+    private static final Logger logger = LoggerFactory.getLogger(SmtpMailService.class);
 
     @Inject
-    public DefaultMailService(Vertx vertx, MailConfigurator configurator, TransportDelegate transportDelegate) {
-        this.vertx = vertx;
+    public SmtpMailService(MailConfigurator configurator, SessionFactory sessionFactory) {
         this.configurator = configurator;
-        this.transportDelegate = transportDelegate;
-    }
-
-    public DefaultMailService(Vertx vertx, TransportDelegate transportDelegate) {
-        this(vertx, new DefaultMailConfigurator(vertx), transportDelegate);
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
     public void start() {
-        initSession();
+        try {
+            initSession();
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void stop() {
-
+        if (transport != null) {
+            try {
+                transport.close();
+            } catch (MessagingException e) {
+                logger.warn("Error closing transport", e);
+            }
+            transport = null;
+        }
     }
 
     @Override
@@ -65,24 +77,59 @@ public class DefaultMailService implements MailService {
         try {
             validate(options);
             Message msg = createMessage(options);
-            transportDelegate.send(msg);
+            logger.trace("Sending message to {}", (Object[]) msg.getAllRecipients());
+            transport.sendMessage(msg, msg.getAllRecipients());
             resultHandler.handle(Future.succeededFuture());
 
         } catch (Throwable t) {
+            logger.warn("Error sending message", t);
             resultHandler.handle(Future.failedFuture(t));
         }
     }
 
-    private void initSession() {
+    private void initSession() throws MessagingException {
+
+        logger.info("Initializing mail session: protocol={} host={} port={}",
+                configurator.getTransportProtocol(),
+                configurator.getHost(),
+                configurator.getPort());
 
         Properties props = new Properties();
-        props.put(MAIL_TRANSPORT_PROTOCOL_NAME, SMTP);
-        props.put(MAIL_SMTP_HOST_NAME, configurator.getHost());
-        props.put(MAIL_SMTP_PORT_NAME, Integer.toString(configurator.getPort()));
+        props.put(MAIL_TRANSPORT_PROTOCOL, configurator.getTransportProtocol());
+        props.put(MAIL_SMTP_HOST, configurator.getHost());
+        props.put(MAIL_SMTP_PORT, Integer.toString(configurator.getPort()));
         props.put(MAIL_SMTP_CONNECT_TIMEOUT, Integer.toString(configurator.getConnectTimeout()));
         props.put(MAIL_SMTP_TIMEOUT, Integer.toString(configurator.getTimeout()));
+        props.put(MAIL_SMTP_STARTTLS_ENABLE, Boolean.toString(configurator.getStartTlsEnable()));
+        props.put(MAIL_SMTP_STARTTLS_REQUIRED, Boolean.toString(configurator.getStartTlsRequired()));
 
-        session = Session.getInstance(props);
+        String username = configurator.getUsername();
+        String password = configurator.getPassword();
+
+        boolean auth = username != null &&
+                username.length() > 0 &&
+                password != null &&
+                password.length() > 0;
+
+        if (auth) {
+            props.put(MAIL_SMTP_AUTH, Boolean.TRUE.toString());
+        }
+
+        session = sessionFactory.getInstance(props);
+
+        if (configurator.isDebug()) {
+            session.setDebug(true);
+        }
+
+        transport = session.getTransport();
+
+        if (auth) {
+            logger.info("Transport connecting with username {}", username);
+            transport.connect(username, password);
+        } else {
+            transport.connect();
+        }
+
     }
 
     protected Message createMessage(SendOptions options) throws MessagingException {
@@ -128,4 +175,5 @@ public class DefaultMailService implements MailService {
         }
         return result;
     }
+
 }
