@@ -78,6 +78,9 @@ public class SmtpMailService implements MailService {
             validate(options);
             Message msg = createMessage(options);
             logger.trace("Sending message to {}", (Object[]) msg.getAllRecipients());
+            if (!transport.isConnected()) {
+                transport.connect();
+            }
             transport.sendMessage(msg, msg.getAllRecipients());
             resultHandler.handle(Future.succeededFuture());
 

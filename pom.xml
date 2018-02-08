@@ -13,8 +13,8 @@
 
     <properties>
         <hk2.version>2.4.0</hk2.version>
-        <javamail.version>1.5.6</javamail.version>
-        <greenmail.version>1.5.4</greenmail.version>
+        <javamail.version>1.6.0</javamail.version>
+        <greenmail.version>1.5.6</greenmail.version>
         <junit.system.rules>1.16.1</junit.system.rules>
         <mockito.version>2.7.22</mockito.version>
 
